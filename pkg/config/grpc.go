@@ -43,7 +43,7 @@ func (ImplementedCollectorServiceHandler) GetConfig(
 	if err != nil {
 		return nil, err
 	}
-	globalStorage.Set(configID, resolvedConfig.String())
+	globalStorage.SetWithTemplate(configID, resolvedConfig.String(), templateName)
 	res := connect.NewResponse(&v1.GetConfigResponse{Content: resolvedConfig.String()})
 	return res, nil
 }

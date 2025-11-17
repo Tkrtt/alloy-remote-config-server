@@ -17,12 +17,44 @@ var (
 )
 
 func LoadTemplates(path string) error {
-	configFolder = path 
+	configFolder = path
 	files, err := filepath.Glob(filepath.Join(path, "*.conf.tmpl"))
 	if err != nil {
 		return err
 	}
 
+	// Get the set of currently existing template names
+	currentTemplates := make(map[string]bool)
+	for _, file := range files {
+		fullName := filepath.Base(file)
+		trimmedName := strings.TrimSuffix(fullName, ".conf.tmpl")
+		currentTemplates[trimmedName] = true
+	}
+
+	// Find templates that are no longer present and remove them from our templates map
+	templatesToRemove := []string{}
+	for templateName := range templates {
+		if !currentTemplates[templateName] {
+			templatesToRemove = append(templatesToRemove, templateName)
+		}
+	}
+
+	// Remove templates that no longer exist
+	for _, templateName := range templatesToRemove {
+		delete(templates, templateName)
+		log.Printf("Removed template: %s", templateName)
+		// Clean up configs that were generated from this template
+		if globalStorage != nil {
+			err := globalStorage.RemoveByTemplate(templateName)
+			if err != nil {
+				log.Printf("Error removing configs for template %s: %v", templateName, err)
+			} else {
+				log.Printf("Removed configs generated from template: %s", templateName)
+			}
+		}
+	}
+
+	// Load current templates
 	for _, file := range files {
 		content, err := ioutil.ReadFile(file)
 		if err != nil {
