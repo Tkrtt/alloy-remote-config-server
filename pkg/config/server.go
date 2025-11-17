@@ -16,7 +16,7 @@ func Start() {
 	if len(httpPortEnv) > 0 {
 		httpPort, _ = strconv.Atoi(httpPortEnv)
 	}
-	grpcPort := 21235  // Default to the requested port
+	grpcPort := 8888  // Default to the requested port
 	grpcPortEnv := os.Getenv("GRPC_PORT")
 	if len(grpcPortEnv) > 0 {
 		grpcPort, _ = strconv.Atoi(grpcPortEnv)
@@ -40,7 +40,6 @@ func Start() {
 		log.Println(fmt.Sprintf("Error loading storage: %v", err))
 	}
 
-	// Start template watcher in a separate goroutine for live reload
 	go StartTemplateWatcher(configFolder)
 
 	go StartConnectGrpcServer(listenAddr, grpcPort)

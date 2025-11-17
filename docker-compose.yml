@@ -1,0 +1,29 @@
+services:
+  alloy-remote-config:
+    build: .
+    ports:
+      - "8080:8080"  # HTTP port
+      - "8888:8888"  # gRPC port
+    environment:
+      - HTTP_PORT=8080
+      - GRPC_PORT=8888
+    volumes:
+      - ./conf:/conf:ro  # Mount template files for live reload
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/templates"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - monitoring
+
+networks:
+  monitoring:
+    driver: bridge
+
+volumes:
+  grafana_data:
+  tempo_data:
+  loki_data:
